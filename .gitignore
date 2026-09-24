@@ -1,0 +1,24 @@
+# Python & Virtual Environments
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Large Zip Archives & Datasets (>100MB exceeds GitHub limits)
+*.zip
+datasets/
+runs/
+
+# Environment Variables & Local Secrets
+.env
+.env.local
+
+# Local SQLite databases & temporary files
+app/data/*.db
+app/data/*.sqlite
+*.sqlite3
+.DS_Store
+Thumbs.db

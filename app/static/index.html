@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Raksha AI - Traffic Police Command, PWD & Smart Transit Safety Platform</title>
+  <meta name="description" content="Edge-to-Cloud AI Perception, AES-256 Encrypted Telemetry, Geofencing, Dedicated Traffic Police & PWD Dashboards, and Bus Driver MADT In-Cabin HUD." />
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  
+  <!-- Leaflet CSS for Interactive High-Res Maps -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+  <!-- CryptoJS for Client-Side AES-256-GCM / CBC Encryption -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+<body class="theme-dark">
+  <!-- Dynamic Ambient Glow Backdrops -->
+  <div class="ambient-glow glow-police"></div>
+  <div class="ambient-glow glow-pwd"></div>
+  <div class="ambient-glow glow-radar"></div>
+  <div class="grid-backdrop"></div>
+
+  <!-- Global Application Header -->
+  <header class="app-header">
+    <div class="header-top-row">
+      <div class="brand-badge">
+        <div class="brand-radar-icon">
+          <div class="radar-sweep"></div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <div class="brand-title-wrap">
+            <h1 class="brand-heading">RAKSHA <span class="accent-text">AI</span></h1>
+            <span class="badge-police-pro">ENTERPRISE COMMAND</span>
+          </div>
+          <p class="brand-subheading">Autonomous Public Transit Perception &bull; Geofenced Incident & Pothole Gateway</p>
+        </div>
+      </div>
+
+      <!-- Live Telemetry Status Bar & Controls -->
+      <div class="header-top-right">
+        <div class="header-telemetry">
+          <div class="telemetry-pill" id="pillAesStatus" title="AES-256-GCM End-to-End Cryptography Active">
+            <span class="pill-dot pulse-cyan"></span>
+            <span class="pill-text"><strong id="aesStatusText">AES-256-GCM</strong> LINK</span>
+          </div>
+          <div class="telemetry-pill" id="pillGeofenceCount" title="Active Geofenced Accident & Hazard Zones">
+            <span class="pill-dot pulse-red"></span>
+            <span class="pill-text"><strong id="activeGeofenceCount">8</strong> GEOFENCES</span>
+          </div>
+          <div class="telemetry-pill" id="pillCloudStatus" title="Supabase Free Tier Cloud Database Status">
+            <span class="pill-dot pulse-emerald"></span>
+            <span class="pill-text"><strong id="cloudStatusText">SUPABASE</strong> SYNC</span>
+          </div>
+        </div>
+
+        <button class="map-config-btn" id="btnHeaderMapConfig" title="Real Maps & API Key Settings">
+          <span class="btn-icon">🗺️</span>
+          <span class="btn-text">Real Map / Key</span>
+        </button>
+
+        <button class="theme-toggle-btn" id="btnThemeToggle" title="Switch Theme (Dark / Light Mode)" aria-label="Switch Theme">
+          <span class="theme-icon theme-icon-moon">🌙</span>
+          <span class="theme-icon theme-icon-sun">☀️</span>
+          <span class="theme-text" id="themeText">Dark Mode</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Authority Tabs Strip -->
+    <div class="header-nav-row">
+      <nav class="nav-authority-bar" id="mainNavTabs">
+        <button class="nav-btn active" data-tab="police-hq" id="btnTabPoliceHq">
+          <span class="btn-icon">👮</span>
+          <div class="btn-text-wrap">
+            <span class="btn-title">Police HQ</span>
+            <span class="btn-desc">Accidents & Traffic</span>
+          </div>
+        </button>
+
+        <button class="nav-btn" data-tab="pwd-admin" id="btnTabPwdAdmin">
+          <span class="btn-icon">🚧</span>
+          <div class="btn-text-wrap">
+            <span class="btn-title">PWD Admin</span>
+            <span class="btn-desc">Roads & Potholes</span>
+          </div>
+        </button>
+
+        <button class="nav-btn" data-tab="driver-madt" id="btnTabDriverMadt">
+          <span class="btn-icon">🚌</span>
+          <div class="btn-text-wrap">
+            <span class="btn-title">Driver MADT</span>
+            <span class="btn-desc">In-Cabin Radar HUD</span>
+          </div>
+        </button>
+
+        <button class="nav-btn" data-tab="bus-edge" id="btnTabBusEdge">
+          <span class="btn-icon">📡</span>
+          <div class="btn-text-wrap">
+            <span class="btn-title">Edge AI & AES</span>
+            <span class="btn-desc">Bus Cam & Route Sim</span>
+          </div>
+        </button>
+
+        <button class="nav-btn" data-tab="cloud-deploy" id="btnTabCloudDeploy">
+          <span class="btn-icon">☁️</span>
+          <div class="btn-text-wrap">
+            <span class="btn-title">Cloud Deploy</span>
+            <span class="btn-desc">Free Host & Storage</span>
+          </div>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Global Toast Notification Center -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Main Viewport Area -->
+  <main class="app-viewport">
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 1: POLICE HEADQUARTERS (TRAFFIC & ACCIDENT CONTROL)                  -->
+    <!-- ========================================================================= -->
+    <section class="portal-view active" id="viewPoliceHq">
+      
+      <!-- Authority Banner -->
+      <div class="authority-banner glass-card glow-border-police">
+        <div class="banner-identity">
+          <div class="authority-icon-box police-icon-bg">
+            <span class="auth-symbol">👮</span>
+          </div>
+          <div>
+            <h2 class="auth-title">STATE TRAFFIC POLICE HEADQUARTERS & ACCIDENT CONTROL</h2>
+            <p class="auth-subtitle">Highway Rapid-Response Dispatch &bull; Real-Time Geofenced Vehicle Collisions, Traffic Bottlenecks & Route Diversions</p>
+          </div>
+        </div>
+
+        <div class="authority-kpi-row">
+          <div class="kpi-mini-card">
+            <span class="kpi-label">TOTAL INCIDENTS</span>
+            <span class="kpi-num accent-blue" id="polKpiTotal">0</span>
+          </div>
+          <div class="kpi-mini-card">
+            <span class="kpi-label">ACTIVE ACCIDENT GEOFENCES</span>
+            <span class="kpi-num accent-red pulse-text" id="polKpiActive">0</span>
+          </div>
+          <div class="kpi-mini-card">
+            <span class="kpi-label">PATROL DISPATCHED</span>
+            <span class="kpi-num accent-yellow" id="polKpiAck">0</span>
+          </div>
+          <div class="kpi-mini-card">
+            <span class="kpi-label">CLEARED & REOPENED</span>
+            <span class="kpi-num accent-emerald" id="polKpiRepaired">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Layout: Live Police Map (Left) & Incident Action Queue (Right) -->
+      <div class="split-view-container">
+        
+        <!-- Left Panel: Interactive Traffic Police Geofence Map -->
+        <div class="map-panel glass-card">
+          <div class="panel-header">
+            <div class="header-tag">
+              <span class="tag-dot pulse-red"></span>
+              <h3>Traffic Emergency Radar & Live Transit Bus Fleet</h3>
+            </div>
+            <div class="map-controls">
+              <select class="map-style-select map-provider-select" title="Switch Map Layer (Real Street, Satellite, Mapbox)">
+                <option value="osm">🗺️ Real Street Map (OSM)</option>
+                <option value="satellite">🛰️ Real Satellite HD</option>
+                <option value="mapbox_streets">🌐 Mapbox Streets</option>
+                <option value="mapbox_satellite">🌌 Mapbox Satellite</option>
+                <option value="carto_dark">🌙 Dark Cyber</option>
+                <option value="carto_light">☀️ Light Clean</option>
+              </select>
+              <button class="map-btn btn-open-map-key" title="Configure Mapbox / Map API Key">
+                🔑 Key
+              </button>
+              <button class="map-btn" id="btnPolRefreshMap" title="Refresh Live Markers">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                Sync Radar
+              </button>
+              <button class="map-btn" id="btnPolRecenter" title="Center on Transit Corridor">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="12 8 8 12 12 16 12 8"/></svg>
+                Center Route
+              </button>
+            </div>
+          </div>
+
+          <!-- Leaflet Map Container -->
+          <div class="map-wrapper">
+            <div id="policeMap" class="leaflet-map-element"></div>
+            <!-- Map Legend Overlay -->
+            <div class="map-legend">
+              <div class="legend-title">Police Tactical Map Symbols</div>
+              <div class="legend-item"><span class="legend-badge legend-accident">💥</span> Vehicle Crash / Collision</div>
+              <div class="legend-item"><span class="legend-badge legend-traffic">🚗</span> Traffic Jam / Gridlock</div>
+              <div class="legend-item"><span class="legend-badge legend-signal">🚦</span> Traffic Signal Malfunction</div>
+              <div class="legend-item"><span class="legend-badge legend-parking">⛔</span> Illegal Bus Bay Parking</div>
+              <div class="legend-item"><span class="legend-badge legend-bus">🚌</span> Public Transit Bus</div>
+              <div class="legend-item"><span class="legend-circle-sample police-circle"></span> Geofenced Danger Zone (150m-200m)</div>
+            </div>
+          </div>
+
+          <div class="map-footer-status">
+            <span>🛡️ Active accident geofences automatically alert oncoming bus drivers to slow down and switch lanes before reaching the crash site.</span>
+          </div>
+        </div>
+
+        <!-- Right Panel: Traffic Incident Action Queue -->
+        <div class="queue-panel glass-card">
+          <div class="panel-header">
+            <div class="header-tag">
+              <h3>Police Traffic Dispatch Queue</h3>
+              <span class="badge badge-police" id="polQueueCount">0 Incidents</span>
+            </div>
+            <div class="filter-pills" id="polFilterPills">
+              <button class="filter-pill active" data-filter="ALL">All</button>
+              <button class="filter-pill" data-filter="ACTIVE">Active (<span id="polCountActive">0</span>)</button>
+              <button class="filter-pill" data-filter="ACKNOWLEDGED">Patrol En Route (<span id="polCountAck">0</span>)</button>
+              <button class="filter-pill" data-filter="REPAIRED">Cleared (<span id="polCountRepaired">0</span>)</button>
+            </div>
+          </div>
+
+          <!-- Incident Cards List -->
+          <div class="incident-card-list" id="policeIncidentList">
+            <div class="empty-state-box">Loading Traffic Police Incident Feed...</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 2: PWD (PUBLIC WORKS DEPARTMENT) ADMIN DASHBOARD                     -->
+    <!-- ========================================================================= -->
+    <section class="portal-view" id="viewPwdAdmin">
+      
+      <!-- Authority Banner -->
+      <div class="authority-banner glass-card glow-border-cyan">
+        <div class="banner-identity">
+          <div class="authority-icon-box pwd-icon-bg">
+            <span class="auth-symbol">🚧</span>
+          </div>
+          <div>
+            <h2 class="auth-title">PUBLIC WORKS & HIGHWAYS ROAD ADMINISTRATION (PWD)</h2>
+            <p class="auth-subtitle">Civil Road Infrastructure & Pavement Maintenance Authority &bull; Geofenced Asphalt Potholes, Cracks & Crosswalks</p>
+          </div>
+        </div>
+
+        <div class="authority-kpi-row">
+          <div class="kpi-mini-card">
+            <span class="kpi-label">TOTAL ROAD DEFECTS</span>
+            <span class="kpi-num accent-cyan" id="pwdKpiTotal">0</span>
+          </div>
+          <div class="kpi-mini-card">
+            <span class="kpi-label">ACTIVE POTHOLE GEOFENCES</span>
+            <span class="kpi-num accent-red pulse-text" id="pwdKpiActive">0</span>
+          </div>
+          <div class="kpi-mini-card">
+            <span class="kpi-label">SCHEDULED WORK ORDERS</span>
+            <span class="kpi-num accent-yellow" id="pwdKpiAck">0</span>
+          </div>
+          <div class="kpi-mini-card">
+            <span class="kpi-label">ASPHALT REPAIRED & CLEAR</span>
+            <span class="kpi-num accent-emerald" id="pwdKpiRepaired">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Layout: PWD Map (Left) & Defect Action Queue (Right) -->
+      <div class="split-view-container">
+        
+        <!-- Left Panel: PWD Road Surface Map -->
+        <div class="map-panel glass-card">
+          <div class="panel-header">
+            <div class="header-tag">
+              <span class="tag-dot pulse-cyan"></span>
+              <h3>Road Surface Defect Radar & Pavement Quality Map</h3>
+            </div>
+            <div class="map-controls">
+              <select class="map-style-select map-provider-select" title="Switch Map Layer (Real Street, Satellite, Mapbox)">
+                <option value="osm">🗺️ Real Street Map (OSM)</option>
+                <option value="satellite">🛰️ Real Satellite HD</option>
+                <option value="mapbox_streets">🌐 Mapbox Streets</option>
+                <option value="mapbox_satellite">🌌 Mapbox Satellite</option>
+                <option value="carto_dark">🌙 Dark Cyber</option>
+                <option value="carto_light">☀️ Light Clean</option>
+              </select>
+              <button class="map-btn btn-open-map-key" title="Configure Mapbox / Map API Key">
+                🔑 Key
+              </button>
+              <button class="map-btn" id="btnPwdRefreshMap">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                Sync Map
+              </button>
+              <button class="map-btn" id="btnPwdRecenter">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="12 8 8 12 12 16 12 8"/></svg>
+                Center Route
+              </button>
+            </div>
+          </div>
+
+          <!-- Leaflet Map Container -->
+          <div class="map-wrapper">
+            <div id="pwdMap" class="leaflet-map-element"></div>
+            <!-- Map Legend -->
+            <div class="map-legend">
+              <div class="legend-title">PWD Defect Legend</div>
+              <div class="legend-item"><span class="legend-badge legend-pothole">🕳️</span> Deep Pothole Crater</div>
+              <div class="legend-item"><span class="legend-badge legend-zebra">🦓</span> Faded Zebra Crossing</div>
+              <div class="legend-item"><span class="legend-badge legend-manhole">⭕</span> Displaced Manhole Cover</div>
+              <div class="legend-item"><span class="legend-badge legend-bus">🚌</span> Public Transit Bus</div>
+              <div class="legend-item"><span class="legend-circle-sample pwd-circle"></span> Geofenced Hazard Buffer</div>
+            </div>
+          </div>
+
+          <div class="map-footer-status">
+            <span>Clicking 'Mark as Repaired' updates the pavement database and instantly removes the geofence circle from oncoming bus driver HUDs.</span>
+          </div>
+        </div>
+
+        <!-- Right Panel: PWD Work Order Queue -->
+        <div class="queue-panel glass-card">
+          <div class="panel-header">
+            <div class="header-tag">
+              <h3>PWD Road Maintenance Work Orders</h3>
+              <span class="badge badge-cyan" id="pwdQueueCount">0 Defects</span>
+            </div>
+            <div class="filter-pills" id="pwdFilterPills">
+              <button class="filter-pill active" data-filter="ALL">All</button>
+              <button class="filter-pill" data-filter="ACTIVE">Active (<span id="pwdCountActive">0</span>)</button>
+              <button class="filter-pill" data-filter="ACKNOWLEDGED">Scheduled (<span id="pwdCountAck">0</span>)</button>
+              <button class="filter-pill" data-filter="REPAIRED">Repaired (<span id="pwdCountRepaired">0</span>)</button>
+            </div>
+          </div>
+
+          <!-- Incident Cards List -->
+          <div class="incident-card-list" id="pwdIncidentList">
+            <div class="empty-state-box">Loading PWD Road Defect Feed...</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 3: BUS DRIVER MADT (MOUNTED ALERT DISPLAY TERMINAL) COCKPIT          -->
+    <!-- ========================================================================= -->
+    <section class="portal-view" id="viewDriverMadt">
+      
+      <div class="madt-cockpit-frame">
+        
+        <!-- Top Cockpit Ribbon -->
+        <div class="cockpit-top-ribbon">
+          <div class="bus-unit-badge">
+            <div class="unit-icon">🚌</div>
+            <div>
+              <div class="unit-id" id="madtBusId">BUS-104 &bull; TATA STARBUS URBAN ULTRA</div>
+              <div class="unit-route" id="madtRouteName">ROUTE 19B : CHENNAI CENTRAL ➔ IT HIGHWAY EXPRESS</div>
+            </div>
+          </div>
+
+          <div class="cockpit-telemetry-items">
+            <div class="telemetry-box">
+              <span class="t-label">LIVE GPS COORDINATES</span>
+              <span class="t-val mono-font" id="madtGpsCoords">13.0850° N, 80.2760° E</span>
+            </div>
+            <div class="telemetry-box">
+              <span class="t-label">DGPS SATELLITE LOCK</span>
+              <span class="t-val accent-emerald">14 SATS (3D DIFFERENTIAL)</span>
+            </div>
+            <div class="telemetry-box">
+              <span class="t-label">AES SECURITY LINK</span>
+              <span class="t-val accent-cyan">AES-256-GCM SECURE</span>
+            </div>
+            <div class="telemetry-box">
+              <span class="t-label">CABIN SOUND ALARM</span>
+              <button class="sound-toggle-btn active" id="btnMadtAudioToggle">
+                <span id="audioIcon">🔊</span> <span id="audioStatusText">BUZZER ON</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================================================== -->
+        <!-- HIGH PRIORITY DYNAMIC DRIVER PROXIMITY ALERT BANNER   -->
+        <!-- ===================================================== -->
+        <div class="madt-alert-banner alert-state-safe" id="madtAlertBanner">
+          
+          <div class="alert-banner-left">
+            <div class="alert-flashing-icon" id="madtAlertIcon">🛡️</div>
+            <div class="alert-text-block">
+              <div class="alert-status-badge" id="madtAlertBadge">ROUTE SAFE & CLEAR</div>
+              <h2 class="alert-headline" id="madtAlertHeadline">NO IMMEDIATE ACCIDENTS OR GEOFENCED HAZARDS AHEAD</h2>
+              <p class="alert-subtext" id="madtAlertSubtext">Real-time geofence proximity engine scanning 300 meters forward on navigation trajectory.</p>
+            </div>
+          </div>
+
+          <div class="alert-banner-right" id="madtDistanceContainer" style="display: none;">
+            <div class="distance-countdown-box">
+              <span class="dist-label">DISTANCE TO INCIDENT</span>
+              <div class="dist-number mono-font" id="madtDistanceVal">-- m</div>
+              <div class="dist-bar-track">
+                <div class="dist-bar-fill" id="madtDistBar"></div>
+              </div>
+            </div>
+            <div class="action-recommendation" id="madtActionRec">
+              ⚠️ REDUCE SPEED TO 20 KM/H
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Middle Cockpit Grid: Digital Gauges + Tactical Radar Map -->
+        <div class="cockpit-main-grid">
+          
+          <!-- Left Column: Speedometer & Driver Controls -->
+          <div class="cockpit-gauge-column glass-card">
+            
+            <!-- Digital Speedometer Gauge -->
+            <div class="speedometer-box">
+              <div class="speed-ring">
+                <svg viewBox="0 0 200 200" class="speed-svg">
+                  <circle cx="100" cy="100" r="80" class="speed-track"></circle>
+                  <circle cx="100" cy="100" r="80" class="speed-progress" id="speedSvgProgress"></circle>
+                </svg>
+                <div class="speed-content">
+                  <span class="speed-val mono-font" id="madtSpeedDisplay">42</span>
+                  <span class="speed-unit">KM / H</span>
+                  <span class="speed-limit">LIMIT: 50 KM/H</span>
+                </div>
+              </div>
+              <div class="speed-slider-control">
+                <label>Simulate Bus Throttle / Speed:</label>
+                <input type="range" id="sliderBusSpeed" min="0" max="80" value="42" class="custom-range" />
+              </div>
+            </div>
+
+            <!-- Approaching Hazards Radar List -->
+            <div class="radar-approaching-box">
+              <div class="sub-header">
+                <span>📍 UPCOMING GEOFENCED INCIDENTS ON ROUTE</span>
+                <span class="badge" id="madtUpcomingCount">0 Nearby</span>
+              </div>
+              <div class="approaching-list" id="madtApproachingList">
+                <div class="no-hazards-msg">Scanning forward corridor...</div>
+              </div>
+            </div>
+
+            <!-- Driver Tactile Buttons -->
+            <div class="driver-action-buttons">
+              <button class="driver-btn btn-ack-alert" id="btnDriverAck">
+                <span class="btn-sym">✔️</span> ACKNOWLEDGE ALERT
+              </button>
+              <button class="driver-btn btn-sos-alert" id="btnDriverSos">
+                <span class="btn-sym">🚨</span> REPORT CRASH / ROAD BLOCK
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Right Column: Cabin Tactical Radar Navigation Map -->
+          <div class="cockpit-nav-column glass-card">
+            <div class="panel-header">
+              <div class="header-tag">
+                <span class="tag-dot pulse-emerald"></span>
+                <h3>MADT In-Cabin Navigation Radar & Geofence Rings</h3>
+              </div>
+              <div class="map-controls">
+                <select class="map-style-select map-provider-select" title="Switch Map Layer (Real Street, Satellite, Mapbox)">
+                  <option value="osm">🗺️ Real Street Map (OSM)</option>
+                  <option value="satellite">🛰️ Real Satellite HD</option>
+                  <option value="mapbox_streets">🌐 Mapbox Streets</option>
+                  <option value="mapbox_satellite">🌌 Mapbox Satellite</option>
+                  <option value="carto_dark">🌙 Dark Cyber</option>
+                  <option value="carto_light">☀️ Light Clean</option>
+                </select>
+                <button class="map-btn btn-open-map-key" title="Configure Mapbox / Map API Key">
+                  🔑 Key
+                </button>
+                <button class="map-btn active-pulse" id="btnToggleSimDrive">
+                  <span id="simDriveIcon">▶️</span> <span id="simDriveText">Start Simulated Bus Route</span>
+                </button>
+                <button class="map-btn" id="btnResetBusPos">Reset Start Point</button>
+              </div>
+            </div>
+
+            <!-- Tactical Radar Map -->
+            <div class="map-wrapper madt-map-wrapper">
+              <div id="driverMap" class="leaflet-map-element"></div>
+              <div class="radar-scan-overlay"></div>
+              <div class="compass-hud mono-font" id="madtHeadingCompass">HEADING: 215° SW</div>
+            </div>
+
+            <div class="madt-footer-instruction">
+              <strong>DRIVER SAFETY PROTOCOL:</strong> When approaching a vehicle collision or pothole geofence, reduce speed to safe crawl and follow police diversion directions.
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 4: BUS EDGE AI PERCEPTION & AES CRYPTO LAB                           -->
+    <!-- ========================================================================= -->
+    <section class="portal-view" id="viewBusEdge">
+      
+      <div class="edge-hero-banner glass-card glow-border-violet">
+        <div class="banner-identity">
+          <div class="authority-icon-box edge-icon-bg">
+            <span class="auth-symbol">📡</span>
+          </div>
+          <div>
+            <h2 class="auth-title">BUS IN-CABIN EDGE AI PERCEPTION & AES-256 CRYPTO LAB</h2>
+            <p class="auth-subtitle">Simulates the In-Vehicle AI Processing Unit &bull; Encrypted Telemetry Uplink to Police HQ & PWD</p>
+          </div>
+        </div>
+        <div class="edge-specs-pills">
+          <span class="spec-pill">Compute: NVIDIA Jetson Orin / RTX Edge</span>
+          <span class="spec-pill">Encryption: AES-256-GCM (128-bit Auth Tag)</span>
+          <span class="spec-pill">Perception: YOLO Traffic & Road Safety Multi-Class</span>
+        </div>
+      </div>
+
+      <div class="edge-grid-layout">
+        
+        <!-- Left: Camera Perception Feed -->
+        <div class="edge-panel glass-card">
+          <div class="panel-header">
+            <h3>📷 Bus Forward Camera Perception Stream</h3>
+            <span class="badge badge-cyan">Real-Time Vision</span>
+          </div>
+
+          <!-- Test Scenario Buttons -->
+          <div class="sample-picker-bar">
+            <span class="picker-label">Test Incident Scenario:</span>
+            <div class="picker-buttons" id="edgeSampleButtons">
+              <button class="sample-pick-btn active" data-sample="police_accident_collision.jpg" data-sim="accident_collision">Vehicle Collision (Police)</button>
+              <button class="sample-pick-btn" data-sample="police_traffic_jam.jpg" data-sim="traffic_congestion">Traffic Gridlock (Police)</button>
+              <button class="sample-pick-btn" data-sample="police_signal_failure.jpg" data-sim="signal_failure">Signal Malfunction (Police)</button>
+              <button class="sample-pick-btn" data-sample="police_illegal_parking.jpg" data-sim="illegal_parking">Illegal Bus Bay Parking (Police)</button>
+              <button class="sample-pick-btn" data-sample="pothole_severe.jpg" data-sim="pothole">Severe Road Pothole (PWD)</button>
+              <button class="sample-pick-btn" data-sample="faded_zebra.jpg" data-sim="faded_zebra">Faded Zebra Crossing (PWD)</button>
+              <button class="sample-pick-btn" data-sample="open_manhole.jpg" data-sim="open_manhole">Open Manhole Trap (PWD)</button>
+            </div>
+          </div>
+
+          <!-- Camera Display -->
+          <div class="edge-cam-viewport">
+            <img id="edgeCamImage" src="/static/samples/police_accident_collision.jpg" alt="Bus Camera View" />
+            <div class="ai-hud-overlay">
+              <div class="hud-top-meta">
+                <span class="hud-rec-dot">● REC</span>
+                <span class="mono-font" id="edgeHudFps">142.4 FPS &bull; 4.8ms Latency</span>
+              </div>
+              <div class="hud-bounding-box-demo" id="edgeHudDetectionBox">
+                <span class="hud-box-tag" id="edgeHudDetectionTag">AI DETECTED: VEHICLE COLLISION (95%)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="edge-actions-row">
+            <button class="primary-action-btn" id="btnTriggerEdgeAlert">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+              Encrypt with AES-256 & Transmit to Cloud
+            </button>
+            <button class="secondary-action-btn" id="btnInjectCustomHazard">
+              ➕ Inject Incident at Custom GPS
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: AES-256 Cryptographic Inspector -->
+        <div class="edge-panel glass-card">
+          <div class="panel-header">
+            <h3>🔐 AES-256-GCM Cryptographic Transmission Pipeline</h3>
+            <span class="badge badge-emerald">Authenticated Encryption</span>
+          </div>
+
+          <div class="crypto-pipeline-steps">
+            
+            <!-- Step 1 -->
+            <div class="crypto-step">
+              <div class="step-header">
+                <span class="step-badge">STEP 1</span>
+                <strong>Edge Telemetry Payload (Plaintext JSON)</strong>
+              </div>
+              <pre class="code-snippet mono-font" id="jsonPlaintextPayload">{
+  "bus_id": "BUS-104",
+  "category": "POLICE",
+  "hazard_type": "accident_collision",
+  "title": "Major Vehicle Collision Blocking Bus Lane",
+  "severity": "CRITICAL",
+  "lat": 13.0838,
+  "lng": 80.2745,
+  "geofence_radius": 180.0,
+  "speed_kmh": 38.5,
+  "confidence": 0.95
+}</pre>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="crypto-step">
+              <div class="step-header">
+                <span class="step-badge">STEP 2</span>
+                <strong>AES-256 Secret Key & 96-Bit Initialization Vector (IV)</strong>
+              </div>
+              <div class="key-iv-grid mono-font">
+                <div><span>256-Bit Master Key:</span> <code id="dispKeyHex">e4d9b2a7f8301c65b9d318e24f0c9a5b...</code></div>
+                <div><span>Unique GCM IV:</span> <code id="dispIvBase64">kL9x/8V90aMnz4==</code></div>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="crypto-step">
+              <div class="step-header">
+                <span class="step-badge">STEP 3</span>
+                <strong>Encrypted Ciphertext & 128-Bit GCM Authentication Tag</strong>
+              </div>
+              <pre class="code-snippet mono-font accent-cyan" id="jsonCiphertextPayload">{
+  "algorithm": "AES-256-GCM",
+  "iv": "kL9x/8V90aMnz4==",
+  "tag": "B3xQ9+1aZkWv840b=",
+  "ciphertext": "m4XqV9z2LpQ8tYbK0s1Nj+9aX..."
+}</pre>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="crypto-step">
+              <div class="step-header">
+                <span class="step-badge">STEP 4</span>
+                <strong>Cloud Decryption & Geofence Activation Verification</strong>
+              </div>
+              <div class="decryption-verif-box" id="cloudVerifBox">
+                <span class="verif-status accent-emerald">✔ Status: Verified by Central Cloud API</span>
+                <p id="cloudVerifText">Incident INC-POL-2026-001 created. Geofence radius of 180m activated on live map.</p>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 5: CLOUD DEPLOYMENT & SUPABASE FREE STORAGE                          -->
+    <!-- ========================================================================= -->
+    <section class="portal-view" id="viewCloudDeploy">
+      
+      <div class="deploy-hero-banner glass-card glow-border-emerald">
+        <div class="banner-identity">
+          <div class="authority-icon-box cloud-icon-bg">
+            <span class="auth-symbol">☁️</span>
+          </div>
+          <div>
+            <h2 class="auth-title">SUPABASE FREE CLOUD STORAGE & RENDER 1-CLICK HOSTING</h2>
+            <p class="auth-subtitle">100% Free Hosting for FastAPI + Supabase PostgreSQL + Static Dashboards</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="deploy-cards-grid">
+        
+        <!-- Supabase Cloud Storage Card -->
+        <div class="deploy-card glass-card">
+          <div class="card-title-row">
+            <span class="card-icon">⚡</span>
+            <h3>1. Supabase Free Tier Cloud Database</h3>
+          </div>
+          <p>Supabase provides 500MB free PostgreSQL database, realtime subscriptions, and REST APIs at zero cost:</p>
+
+          <div class="cloud-provider-list">
+            <div class="provider-item">
+              <strong>Step 1: Create Free Project on Supabase</strong>
+              <p>Go to <a href="https://supabase.com" target="_blank" style="color:var(--accent-cyan);">supabase.com</a> ➔ New Project ➔ Name: <code>raksha-ai</code>.</p>
+            </div>
+            <div class="provider-item">
+              <strong>Step 2: Copy API Keys</strong>
+              <p>Settings ➔ API ➔ Copy <code>Project URL</code> and <code>anon / service_role key</code>.</p>
+            </div>
+            <div class="provider-item">
+              <strong>Step 3: Set Environment Variables</strong>
+              <p>Add <code>SUPABASE_URL</code> and <code>SUPABASE_KEY</code> in Render / cloud dashboard.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Render.com Free Hosting Card -->
+        <div class="deploy-card glass-card">
+          <div class="card-title-row">
+            <span class="card-icon">🚀</span>
+            <h3>2. 1-Click Free Hosting on Render.com</h3>
+          </div>
+          <p>Deploy this complete web app online on Render.com free web service tier:</p>
+
+          <div class="code-preview-box">
+            <div class="code-header"><span>Render Web Service Settings</span></div>
+            <pre><code># 1. Push repo to your GitHub account
+# 2. On Render.com -> New -> Web Service
+# 3. Environment: Python 3
+# 4. Build Command: pip install -r requirements.txt && python app/generate_assets.py
+# 5. Start Command: uvicorn app.server:app --host 0.0.0.0 --port $PORT</code></pre>
+          </div>
+
+          <div class="code-preview-box" style="margin-top: 14px;">
+            <div class="code-header"><span>Environment Variables</span></div>
+            <pre><code>VISION_AI_AES_KEY = e4d9b2a7f8301c65b9d318e24f0c9a5b...
+SUPABASE_URL = https://your-project.supabase.co
+SUPABASE_KEY = your-supabase-anon-key</code></pre>
+          </div>
+        </div>
+
+        <!-- AES Security Architecture Card -->
+        <div class="deploy-card glass-card">
+          <div class="card-title-row">
+            <span class="card-icon">🛡️</span>
+            <h3>3. AES-256 Transmission Security Specs</h3>
+          </div>
+          <p>Bank-grade confidentiality and integrity for bus telemetry:</p>
+          
+          <ul class="crypto-specs-list">
+            <li><strong>Algorithm:</strong> AES-256-GCM (Galois/Counter Mode).</li>
+            <li><strong>Key Size:</strong> 256-Bit Master Key with SHA-256 verification.</li>
+            <li><strong>Replay Protection:</strong> 96-Bit unique Random IV per packet.</li>
+            <li><strong>Integrity Tag:</strong> 128-Bit authentication tag prevents tampering.</li>
+          </ul>
+
+          <div class="export-actions">
+            <button class="map-btn" id="btnExportDbJson">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></line></svg>
+              Download Cloud Database Backup (JSON)
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Incident Details & Action Modal -->
+  <div class="modal-backdrop" id="incidentModal">
+    <div class="modal-card glass-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-cat-badge" id="modalCatBadge">POLICE</span>
+          <h3 id="modalTitle">Incident Details</h3>
+        </div>
+        <button class="modal-close-btn" id="btnModalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-img-box">
+          <img id="modalImg" src="/static/samples/police_accident_collision.jpg" alt="Incident Snapshot" />
+        </div>
+        <div class="modal-details-grid">
+          <div class="modal-field"><span>Incident ID:</span> <strong id="modalId">INC-001</strong></div>
+          <div class="modal-field"><span>Severity:</span> <strong id="modalSeverity" class="accent-red">CRITICAL</strong></div>
+          <div class="modal-field"><span>Location:</span> <strong id="modalAddress">EVR Periyar Salai</strong></div>
+          <div class="modal-field"><span>GPS:</span> <strong id="modalGps" class="mono-font">13.0838, 80.2745</strong></div>
+          <div class="modal-field"><span>Geofence Radius:</span> <strong id="modalRadius">180 meters</strong></div>
+          <div class="modal-field"><span>Reporting Bus:</span> <strong id="modalBus">BUS-104 (38.5 km/h)</strong></div>
+          <div class="modal-field"><span>Status:</span> <strong id="modalStatus">ACTIVE</strong></div>
+          <div class="modal-field"><span>Detection Time:</span> <strong id="modalTime">2026-09-24</strong></div>
+        </div>
+        <div class="modal-description-box">
+          <p id="modalDescription">Multi-vehicle collision on highway corridor.</p>
+        </div>
+      </div>
+      <div class="modal-footer" id="modalActions">
+        <button class="modal-btn btn-ack" id="btnModalAck">Dispatch Patrol / Acknowledge</button>
+        <button class="modal-btn btn-repair" id="btnModalRepair">Mark as Cleared / Reopen Road (Clear Geofence)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Hazard Injection Modal -->
+  <div class="modal-backdrop" id="injectHazardModal">
+    <div class="modal-card glass-card">
+      <div class="modal-header">
+        <h3>➕ Inject Custom Road Incident & Geofence</h3>
+        <button class="modal-close-btn" id="btnInjectClose">&times;</button>
+      </div>
+      <div class="modal-body form-body">
+        <div class="form-row">
+          <label>Target Authority:</label>
+          <select id="injectCategory" class="custom-select">
+            <option value="POLICE">Traffic Police Headquarters (Accidents & Congestion)</option>
+            <option value="PWD">PWD (Public Works & Roads)</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Incident Type:</label>
+          <select id="injectHazardType" class="custom-select">
+            <option value="accident_collision">Vehicle Collision Crash (Police)</option>
+            <option value="traffic_congestion">Heavy Traffic Gridlock (Police)</option>
+            <option value="signal_failure">Traffic Signal Malfunction (Police)</option>
+            <option value="illegal_parking">Illegal Bus Bay Parking (Police)</option>
+            <option value="pothole">Severe Road Pothole (PWD)</option>
+            <option value="faded_zebra">Faded Zebra Crossing (PWD)</option>
+            <option value="open_manhole">Displaced Open Manhole (PWD)</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Incident Title:</label>
+          <input type="text" id="injectTitle" class="custom-input" value="Vehicle Crash Blocking Central Transit Corridor" />
+        </div>
+        <div class="form-row">
+          <label>Severity Level:</label>
+          <select id="injectSeverity" class="custom-select">
+            <option value="CRITICAL">CRITICAL (High Risk Alert)</option>
+            <option value="HIGH">HIGH (Caution Alert)</option>
+            <option value="MODERATE">MODERATE (Notice)</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Geofence Warning Radius (Meters):</label>
+          <input type="number" id="injectRadius" class="custom-input" value="175" min="50" max="500" />
+        </div>
+        <div class="form-row">
+          <label>Coordinates (Lat, Lng):</label>
+          <div class="latlng-inputs">
+            <input type="number" step="0.0001" id="injectLat" class="custom-input" value="13.0815" />
+            <input type="number" step="0.0001" id="injectLng" class="custom-input" value="80.2710" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="primary-action-btn" id="btnSubmitInjectHazard">Encrypt with AES-256 & Transmit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Real Map & Mapbox API Key Settings Modal -->
+  <div class="modal-backdrop" id="mapConfigModal">
+    <div class="modal-card glass-card" style="max-width: 580px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 1.5rem;">🗺️</span>
+          <div>
+            <h3 style="margin: 0; font-size: 1.1rem;">Real Map & API Key Settings</h3>
+            <span style="font-size: 0.75rem; color: var(--text-secondary);">Configure Live Satellite, OpenStreetMap & Mapbox Vector Tiles</span>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="btnMapConfigClose">&times;</button>
+      </div>
+      <div class="modal-body form-body">
+        <div class="form-row">
+          <label><strong>Select Active Map Provider:</strong></label>
+          <select id="modalMapProviderSelect" class="custom-select">
+            <option value="osm">🗺️ Real Street Map (OpenStreetMap - Free, No API Key Required)</option>
+            <option value="satellite">🛰️ Real Satellite Imagery (ESRI High-Res - Free, No API Key Required)</option>
+            <option value="mapbox_streets">🌐 Mapbox Streets Pro (Requires Free Mapbox Token)</option>
+            <option value="mapbox_satellite">🌌 Mapbox Satellite Hybrid (Requires Free Mapbox Token)</option>
+            <option value="mapbox_dark">🌙 Mapbox Navigation Night (Requires Free Mapbox Token)</option>
+            <option value="carto_dark">🌑 Dark Obsidian (CartoDB Cyber)</option>
+            <option value="carto_light">☀️ Light Clean (CartoDB Minimal)</option>
+          </select>
+          <p style="margin-top: 6px; font-size: 0.8rem; color: var(--accent-emerald);">
+            ✨ <strong>OpenStreetMap</strong> and <strong>ESRI Satellite</strong> are 100% real high-resolution maps that work immediately with zero configuration!
+          </p>
+        </div>
+
+        <div class="form-row" id="mapboxKeyGroup">
+          <label><strong>Mapbox Public Access Token (Optional for Mapbox layers):</strong></label>
+          <input type="text" id="inputMapboxApiKey" class="custom-input" placeholder="pk.eyJ1IjoieW91cnVzZXJuYW1lIiwiYSI6ImNs..." />
+          <div style="margin-top: 10px; font-size: 0.8rem; line-height: 1.55; color: var(--text-secondary); background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 8px; padding: 12px 14px;">
+            <strong style="color: var(--accent-police);">📌 How to get your free Mapbox API Key:</strong><br/>
+            1. Go to <a href="https://account.mapbox.com/access-tokens/" target="_blank" rel="noopener noreferrer" style="color: var(--accent-pwd); text-decoration: underline; font-weight: 600;">account.mapbox.com/access-tokens</a> and create a free account.<br/>
+            2. Copy your <strong>Default public token</strong> (it begins with <code>pk.eyJ...</code>).<br/>
+            3. Paste it in the field above and click <strong>Save & Apply Real Map</strong>.<br/>
+            <em>Includes 50,000 free map loads every month.</em>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+        <button class="secondary-btn" id="btnQuickSwitchOsm" style="background: rgba(16, 185, 129, 0.12); border: 1px solid var(--accent-emerald); color: var(--accent-emerald); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8rem;">
+          🗺️ Use Real Street Map (Free)
+        </button>
+        <button class="primary-action-btn" id="btnSaveMapConfig">
+          Save & Apply Map
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Synth Element -->
+  <audio id="audioAlertSynth" preload="auto"></audio>
+
+  <!-- Application Logic -->
+  <script src="/static/app.js"></script>
+</body>
+</html>
