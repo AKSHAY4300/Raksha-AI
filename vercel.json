@@ -16,7 +16,27 @@
       "dest": "/app/static/$1"
     },
     {
-      "src": "/(police-hq|pwd-admin|driver-madt|bus-edge|cloud-deploy)?$",
+      "src": "/",
+      "dest": "/app/static/index.html"
+    },
+    {
+      "src": "/police-hq",
+      "dest": "/app/static/index.html"
+    },
+    {
+      "src": "/pwd-admin",
+      "dest": "/app/static/index.html"
+    },
+    {
+      "src": "/driver-madt",
+      "dest": "/app/static/index.html"
+    },
+    {
+      "src": "/bus-edge",
+      "dest": "/app/static/index.html"
+    },
+    {
+      "src": "/cloud-deploy",
       "dest": "/app/static/index.html"
     },
     {
