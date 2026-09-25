@@ -18,7 +18,7 @@
   // -------------------------------------------------------------------------
   const state = {
     currentTab: 'police-hq',
-    theme: 'dark',
+    theme: 'light',
     policeIncidents: [],
     pwdIncidents: [],
     activeGeofences: [],
@@ -165,7 +165,7 @@
     const themeText = document.getElementById('themeText');
 
     // Check localStorage or default
-    const savedTheme = localStorage.getItem('roadvision_theme') || 'dark';
+    const savedTheme = localStorage.getItem('roadvision_theme') || 'light';
     applyTheme(savedTheme);
 
     btnToggle?.addEventListener('click', () => {
