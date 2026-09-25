@@ -24,7 +24,10 @@ from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image, ImageDraw, ImageFont
-import numpy as np
+try:
+    import numpy as np
+except ImportError:
+    np = None
 
 from app.crypto_utils import crypto_engine, DEFAULT_AES_KEY_HEX
 from app.database import db, haversine_distance
@@ -489,9 +492,15 @@ def export_database_json():
         "crypto_signature": hashlib.sha256(json.dumps(incidents, default=str).encode('utf-8')).hexdigest()
     }
 
-# Mount static files
-STATIC_DIR.mkdir(parents=True, exist_ok=True)
-app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+# Mount static files safely
+try:
+    if not STATIC_DIR.exists():
+        STATIC_DIR.mkdir(parents=True, exist_ok=True)
+except Exception:
+    pass
+
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 @app.get("/", response_class=HTMLResponse)
 @app.get("/police-hq", response_class=HTMLResponse)

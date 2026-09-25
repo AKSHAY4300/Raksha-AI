@@ -16,6 +16,22 @@
       "dest": "/app/static/$1"
     },
     {
+      "src": "/(police-hq|pwd-admin|driver-madt|bus-edge|cloud-deploy)?$",
+      "dest": "/app/static/index.html"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/docs",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/openapi.json",
+      "dest": "/api/index.py"
+    },
+    {
       "src": "/(.*)",
       "dest": "/api/index.py"
     }

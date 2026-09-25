@@ -15,11 +15,22 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
-if os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME"):
-    DATA_DIR = Path("/tmp") / "data"
-else:
-    DATA_DIR = Path(__file__).resolve().parent / "data"
+def _get_data_dir() -> Path:
+    # Always use /tmp on Vercel, AWS Lambda, or any environment where local dir is read-only
+    if os.getenv("VERCEL") or os.getenv("VERCEL_ENV") or os.getenv("AWS_LAMBDA_FUNCTION_NAME") or os.getenv("LAMBDA_TASK_ROOT"):
+        return Path("/tmp") / "data"
 
+    local_dir = Path(__file__).resolve().parent / "data"
+    try:
+        local_dir.mkdir(parents=True, exist_ok=True)
+        test_file = local_dir / ".write_test"
+        test_file.touch()
+        test_file.unlink()
+        return local_dir
+    except Exception:
+        return Path("/tmp") / "data"
+
+DATA_DIR = _get_data_dir()
 DB_PATH = DATA_DIR / "vision_ai.db"
 
 # Haversine spherical distance in meters between two GPS lat/lng points
@@ -37,7 +48,10 @@ def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
 
 class DatabaseManager:
     def __init__(self):
-        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        try:
+            DATA_DIR.mkdir(parents=True, exist_ok=True)
+        except Exception:
+            pass
         self.init_db()
         self.seed_initial_data_if_empty()
 
