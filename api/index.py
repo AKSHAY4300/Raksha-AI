@@ -17,25 +17,8 @@ for p in [str(ROOT_DIR), str(APP_DIR)]:
 
 os.environ.setdefault("VERCEL", "1")
 
-try:
-    from app.server import app
-    handler = app
-except Exception as e:
-    import traceback
-    err_msg = str(e)
-    tb_lines = traceback.format_exc().splitlines()
-    from fastapi import FastAPI
-    from fastapi.responses import JSONResponse
-    app = FastAPI(title="Raksha AI Serverless Diagnostic")
-    handler = app
+# Direct top-level imports and assignments for Vercel AST analysis
+from app.server import app
 
-    @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
-    async def serverless_error_handler(path: str):
-        return JSONResponse(
-            status_code=500,
-            content={
-                "error": "Serverless Startup Failure",
-                "detail": err_msg,
-                "traceback": tb_lines[-8:]
-            }
-        )
+handler = app
+application = app
