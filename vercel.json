@@ -1,17 +1,9 @@
 {
   "version": 2,
-  "functions": {
-    "api/index.py": {
-      "includeFiles": "app/**"
-    }
-  },
   "builds": [
     {
       "src": "api/index.py",
-      "use": "@vercel/python",
-      "config": {
-        "includeFiles": ["app/**"]
-      }
+      "use": "@vercel/python"
     },
     {
       "src": "app/static/**",
@@ -37,7 +29,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/app/static/index.html"
+      "dest": "/api/index.py"
     }
   ]
 }
